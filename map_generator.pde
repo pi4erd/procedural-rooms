@@ -9,7 +9,7 @@ class Generator {
   
   Generator() {
     tileTypes[0] = new Tile(loadImage("res/tile0.png"), WallState.EMPTY, WallState.EMPTY, WallState.EMPTY, WallState.EMPTY);
-    tileTypes[1] = new Tile(loadImage("res/tile1.png"), WallState.EMPTY, WallState.EMPTY, WallState.EMPTY, WallState.EMPTY);
+    tileTypes[1] = new Tile(loadImage("res/tile0.png"), WallState.EMPTY, WallState.EMPTY, WallState.EMPTY, WallState.EMPTY);
     
     tileTypes[2] = new Tile(loadImage("res/tile2.png"), WallState.EMPTY, WallState.EMPTY, WallState.FULL, WallState.EMPTY);
     tileTypes[3] = tileTypes[2].rotated(1);
@@ -47,14 +47,19 @@ class Generator {
   
   void generate() {
     tiles[0] = (int)random(tileTypes.length);
-    for(int i = 1; i < w; i++) {
+    for(int i = 1; i < w; i++) { // set upper row
       tiles[i] = getCompatibleTileLeft(tiles[i - 1]);
     }
     for(int j = 1; j < h; j++) {
-      for(int i = 0; i < w; i++) {
-        
+      for(int i = 0; i < w; i++) { // set everything else
+        tiles[i + j * w] = getCompatibleTileLeftTop(getTile(i, j - 1), getTile(i - 1, j));
       }
     } //<>//
+  }
+  
+  int getTile(int x, int y) {
+    if(x < 0 || x >= w || y < 0 || y >= h) return -1;
+    return tiles[x + y * w];
   }
   
   int getCompatibleTileLeftTop(int topTile, int leftTile) {
@@ -62,10 +67,12 @@ class Generator {
     Tile ltr = getTileType(leftTile);
     Tile rndTile;
     int tlIdx;
+    boolean condition;
     do {
       tlIdx = (int)random(tileTypes.length);
       rndTile = getTileType(tlIdx);
-    } while((!rndTile.alignsLeft(ltr)));
+      condition = (rndTile.alignsLeft(ltr) || ltr.isAny) && (rndTile.alignsTop(ttr) || ttr.isAny);
+    } while(!condition);
     return tlIdx;
   }
   
@@ -92,7 +99,7 @@ class Generator {
   }
   
   Tile getTileType(int idx) {
-    if(idx < 0 || idx >= tileTypes.length) return new Tile()
+    if(idx < 0 || idx >= tileTypes.length) return new Tile();
     return tileTypes[idx];
   }
   

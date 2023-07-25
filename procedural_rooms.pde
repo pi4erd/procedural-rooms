@@ -12,4 +12,5 @@ void draw() {
   background(0);
   
   gen.draw();
+  noLoop();
 }
